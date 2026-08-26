@@ -1,1 +1,118 @@
+-- ============================================================
+-- 1. CRIAR O SCHEMA
+-- ============================================================
+CREATE SCHEMA DESAFIO;
+USE DESAFIO;
 
+-- ============================================================
+-- 2. CRIAR AS TABELAS
+-- ============================================================
+
+-- Tabela REGIOES (4 colunas + PK)
+CREATE TABLE REGIOES (
+    id_regiao INT PRIMARY KEY AUTO_INCREMENT,
+    nome_regiao VARCHAR(50) NOT NULL,
+    uf_principal CHAR(2) NOT NULL,
+    populacao_estimada_milhoes DECIMAL(5, 2)
+);
+
+-- Tabela USINAS (4 colunas + PK + FK)
+CREATE TABLE USINAS (
+    id_usina INT PRIMARY KEY AUTO_INCREMENT,
+    nome_usina VARCHAR(100) NOT NULL,
+    tipo_fonte VARCHAR(50) NOT NULL, -- Ex: Hidrelétrica, Eólica, Solar
+    capacidade_mw DECIMAL(10, 2) NOT NULL,
+    id_regiao INT,
+    FOREIGN KEY (id_regiao) REFERENCES REGIOES(id_regiao)
+);
+
+-- Tabela GERACAO (4 colunas + PK + FK)
+CREATE TABLE GERACAO (
+    id_geracao INT PRIMARY KEY AUTO_INCREMENT,
+    data_registro DATE NOT NULL,
+    energia_gerada_mwh DECIMAL(10, 2) NOT NULL,
+    eficiencia_percentual DECIMAL(5, 2),
+    id_usina INT,
+    FOREIGN KEY (id_usina) REFERENCES USINAS(id_usina)
+);
+
+-- ============================================================
+-- 3. INSERIR DADOS (10 registros por tabela)
+-- ============================================================
+
+-- Inserindo 10 Regiões
+INSERT INTO REGIOES (nome_regiao, uf_principal, populacao_estimada_milhoes) VALUES
+('Sudeste', 'SP', 89.0),
+('Sul', 'RS', 11.4),
+('Nordeste', 'BA', 14.9),
+('Norte', 'AM', 18.7),
+('Centro-Oeste', 'GO', 16.5),
+('Sudeste - Interior', 'MG', 21.2),
+('Nordeste - Litoral', 'PE', 9.6),
+('Sul - Serra', 'SC', 7.3),
+('Norte - Leste', 'PA', 8.7),
+('Centro-Oeste - Capital', 'DF', 3.0);
+
+-- Inserindo 10 Usinas
+INSERT INTO USINAS (nome_usina, tipo_fonte, capacidade_mw, id_regiao) VALUES
+('Usina Itaipu', 'Hidrelétrica', 14000.00, 2),
+('Usina Belo Monte', 'Hidrelétrica', 11233.00, 4),
+('Complexo Eólico Chapada', 'Eólica', 300.00, 3),
+('Parque Solar Pirapora', 'Solar', 321.00, 1),
+('Termelétrica Porto de Sergipe', 'Gás Natural', 1515.00, 7),
+('Usina Angra 2', 'Nuclear', 1350.00, 1),
+('Complexo Eólico Delta', 'Eólica', 426.00, 3),
+('Usina Jirau', 'Hidrelétrica', 3750.00, 4),
+('Parque Solar Futuro', 'Solar', 266.00, 5),
+('Usina Tucuruí', 'Hidrelétrica', 8370.00, 9);
+
+-- Inserindo 10 Registros de Geração
+INSERT INTO GERACAO (data_registro, energia_gerada_mwh, eficiencia_percentual, id_usina) VALUES
+('2026-01-01', 125000.50, 95.5, 1),
+('2026-01-01', 98000.00, 92.0, 2),
+('2026-01-01', 2800.75, 88.0, 3),
+('2026-01-01', 3100.20, 91.2, 4),
+('2026-01-01', 14000.00, 85.0, 5),
+('2026-01-02', 12000.00, 90.0, 6),
+('2026-01-02', 4100.00, 89.5, 7),
+('2026-01-02', 35000.00, 93.1, 8),
+('2026-01-02', 2500.00, 87.0, 9),
+('2026-01-02', 80000.00, 94.0, 10);
+
+-- ============================================================
+-- 4. EXECUTAR CONSULTAS
+-- ============================================================
+
+-- 1 UPDATE / DELETE
+UPDATE USINAS 
+SET capacidade_mw = 350.00 
+WHERE id_usina = 3;
+
+DELETE FROM GERACAO 
+WHERE id_geracao = 9;
+
+-- 1 SELECT simples
+SELECT nome_usina, tipo_fonte, capacidade_mw FROM USINAS;
+
+-- 3 Funções Agregadas (SUM, AVG, COUNT)
+SELECT 
+    COUNT(id_geracao) AS total_registros,
+    SUM(energia_gerada_mwh) AS energia_total_gerada,
+    AVG(eficiencia_percentual) AS media_eficiencia
+FROM GERACAO;
+
+-- GROUP BY e HAVING
+SELECT 
+    tipo_fonte,
+    AVG(capacidade_mw) AS media_capacidade
+FROM USINAS
+GROUP BY tipo_fonte
+HAVING AVG(capacidade_mw) > 1000.00;
+
+-- 1 JOIN entre tabelas
+SELECT 
+    u.nome_usina,
+    u.tipo_fonte,
+    r.nome_regiao
+FROM USINAS u
+INNER JOIN REGIOES r ON u.id_regiao = r.id_regiao;
